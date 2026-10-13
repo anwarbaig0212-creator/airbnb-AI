@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Listing · Wanderlust</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="new-listing-page">
+
+  <div class="form-wrapper">
+    <div class="form-card">
+
+      <h2 class="form-heading">Edit your listing</h2>
+      <p class="form-subtext">Update the details below and save your changes.</p>
+      <form method="POST" action="/listings/<%= listing._id %>?_method=PUT" class="listing-form" novalidate>
+
+        <div class="form-group">
+          <label for="title">Title</label>
+          <input id="title" name="listing[title]" type="text" value="<%= listing.title %>" required />
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" name="listing[description]" rows="4" required><%= listing.description %></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="images">Image URL</label>
+          <input id="images" name="listing[image][url]" type="url" value="<%= listing.image && listing.image.url %>" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="price">Price (per night)</label>
+            <input id="price" name="listing[price]" type="number" min="0" value="<%= listing.price %>" required />
+          </div>
+
+          <div class="form-group">
+            <label for="country">Country</label>
+            <input id="country" name="listing[country]" type="text" value="<%= listing.country %>" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="location">Location</label>
+          <input id="location" name="listing[location]" type="text" value="<%= listing.location %>" required />
+        </div>
+
+        <!-- Property Type -->
+        <div class="form-group">
+          <label for="propertyType">Property Type</label>
+          <select id="propertyType" name="listing[propertyType]" required>
+            <option value="">Select Property Type</option>
+
+            <option value="Villa" <%=listing.propertyType==='Villa' ? 'selected' : '' %>>
+              Villa
+            </option>
+
+            <option value="Apartment" <%=listing.propertyType==='Apartment' ? 'selected' : '' %>>
+              Apartment
+            </option>
+
+            <option value="House" <%=listing.propertyType==='House' ? 'selected' : '' %>>
+              House
+            </option>
+
+            <option value="Hotel" <%=listing.propertyType==='Hotel' ? 'selected' : '' %>>
+              Hotel
+            </option>
+
+            <option value="Guesthouse" <%=listing.propertyType==='Guesthouse' ? 'selected' : '' %>>
+              Guesthouse
+            </option>
+          </select>
+        </div>
+
+        <!-- Guests -->
+        <div class="form-group">
+          <label for="guests">Guests</label>
+          <input id="guests" name="listing[guests]" type="number" min="1" value="<%= listing.guests %>" required />
+        </div>
+
+        <!-- Amenities -->
+        <div class="form-group">
+          <label for="amenities">Amenities</label>
+          <input id="amenities" name="listing[amenities]" type="text"
+            value="<%= (listing.amenities || []).join(', ') %>" placeholder="WiFi, Pool, Parking" />
+        </div>
+
+        <!-- Nearby Attractions -->
+        <div class="form-group">
+          <label for="nearbyAttractions">Nearby Attractions</label>
+          <input id="nearbyAttractions" name="listing[nearbyAttractions]" type="text"
+            value="<%= (listing.nearbyAttractions || []).join(', ') %>" placeholder="Beach, Mall, Airport" />
+        </div>
+
+        <div class="form-actions">
+          <a href="/listings/<%= listing._id %>" class="btn-secondary">
+            Cancel
+          </a>
+
+          <button type="submit" class="btn-primary">
+            Update Listing
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</body>
+
+</html>

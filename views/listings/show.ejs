@@ -1,0 +1,95 @@
+<% layout("/layouts/boilerplate") %>
+
+  <div class="show-page">
+
+    <!-- Top bar -->
+    <div class="show-topbar">
+      <a href="/listings" class="back-link">← Back to all listings</a>
+      <a href="/listings/new" class="btn-primary btn-sm">+ New Listing</a>
+    </div>
+
+    <!-- Hero image -->
+    <div class="show-hero">
+      <img src="<%= listing.images && listing.image.url %>" alt="<%= listing.title %>"
+        onerror="this.onerror=null; this.src='https://picsum.photos/seed/listing/1200/600';" />
+    </div>
+
+    <!-- Content -->
+    <div class="show-content">
+
+      <!-- Main info -->
+      <div class="show-main">
+        <h1 class="show-title">
+          <%= listing.title %>
+        </h1>
+
+        <p class="show-location">
+          📍 <%= listing.location %>, <%= listing.country %>
+        </p>
+
+        <!-- Owner info -->
+        <p>Owned by: <i>
+            <%= listing.owner ? listing.owner.username : "Unknown host" %>
+          </i></p>
+        <div class="show-price">
+          <%= new Intl.NumberFormat('en-IN', { style: 'currency' , currency: 'INR' , maximumFractionDigits: 0
+            }).format(listing.price) %>
+            <span class="per-night">/ night</span>
+        </div>
+
+        <div class="show-description">
+          <h3>About this place</h3>
+          <p>
+            <%= listing.description %>
+          </p>
+        </div>
+
+        <!-- Listing details -->
+        <div class="show-details">
+          <h3>Details</h3>
+          <ul>
+            <li><strong>Type:</strong>
+              <%= listing.propertyType %>
+            </li>
+            <li><strong>Guests:</strong>
+              <%= listing.guests %>
+            </li>
+            <li><strong>Bedrooms:</strong>
+              <%= listing.bedrooms %>
+            </li>
+            <li><strong>Beds:</strong>
+              <%= listing.beds %>
+            </li>
+            <li><strong>Bathrooms:</strong>
+              <%= listing.bathrooms %>
+            </li>
+            <li><strong>Amenities:</strong>
+              <%= (listing.amenities || []).join(', ') || ' —' %>
+            </li>
+            <li><strong>Nearby:</strong>
+              <%= (listing.nearbyAttractions || []).join(', ') || ' —' %>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Sidebar / actions (only visible to owner) -->
+      <% if (currUser && listing.owner && listing.owner._id.equals(currUser._id)) { %>
+        <aside class="show-sidebar">
+          <div class="action-card">
+            <h4 class="action-heading">Host actions</h4>
+
+            <div class="btns">
+              <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark">✏️ Edit</a>
+
+              <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="d-inline"
+                onsubmit="return confirm('Delete this listing permanently?');">
+                <button class="btn btn-danger">🗑 Delete</button>
+              </form>
+            </div>
+          </div>
+        </aside>
+        <% } %>
+
+    </div>
+  </div>

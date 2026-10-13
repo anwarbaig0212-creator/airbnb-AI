@@ -1,0 +1,39 @@
+<% layout("/layouts/boilerplate") %>
+
+    <body>
+
+        <section class="listings-section">
+    <h4 class="listings-heading">All listings</h4>
+    <div class="listings-grid">
+        <% for (let listing of all_listing) { %>
+            <a href="/listings/<%= listing._id %>" class="listing-link">
+                <div class="card listing-card">
+                    <img src="<%= listing.images %>" class="card-img-top" alt="<%= listing.title %>"
+                        onerror="this.onerror=null; this.src='https://picsum.photos/seed/listing/400/300';" />
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <%= listing.title %>
+                        </h5>
+                        <p class="card-text">
+                            <%= listing.location %>, <%= listing.country %>
+                        </p>
+                        <p class="card-text">
+                            <%= listing.propertyType %> · <%= listing.guests %> guests · <%= listing.bedrooms %> bed
+                        </p>
+                        <% if (listing.amenities && listing.amenities.length) { %>
+                            <p class="card-text">
+                                <%= listing.amenities.slice(0, 3).join(' · ') %>
+                                <%= listing.amenities.length > 3 ? '…' : '' %>
+                            </p>
+                        <% } %>
+                        <p class="card-price">₹ <%= listing.price.toLocaleString("en-IN") %> / night</p>
+                    </div>
+                </div>
+            </a>
+        <% } %>
+    </div>
+</section>
+
+
+
+    </body>
