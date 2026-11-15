@@ -1,39 +1,74 @@
 <% layout("/layouts/boilerplate") %>
+<% locals.pageTitle = "Explore stays" %>
 
-    <body>
+<!-- ===== AI Travel Assistant ===== -->
+<section class="assistant" id="assistant">
+  <div class="assistant-head">
+    <span class="assistant-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Travel Assistant</span>
+    <h1>Tell us about your trip, we'll find the stay</h1>
+    <p>Describe what you want in your own words: place, budget, guests, vibe.</p>
+  </div>
 
-        <section class="listings-section">
-    <h4 class="listings-heading">All listings</h4>
-    <div class="listings-grid">
-        <% for (let listing of all_listing) { %>
-            <a href="/listings/<%= listing._id %>" class="listing-link">
-                <div class="card listing-card">
-                    <img src="<%= listing.images %>" class="card-img-top" alt="<%= listing.title %>"
-                        onerror="this.onerror=null; this.src='https://picsum.photos/seed/listing/400/300';" />
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <%= listing.title %>
-                        </h5>
-                        <p class="card-text">
-                            <%= listing.location %>, <%= listing.country %>
-                        </p>
-                        <p class="card-text">
-                            <%= listing.propertyType %> · <%= listing.guests %> guests · <%= listing.bedrooms %> bed
-                        </p>
-                        <% if (listing.amenities && listing.amenities.length) { %>
-                            <p class="card-text">
-                                <%= listing.amenities.slice(0, 3).join(' · ') %>
-                                <%= listing.amenities.length > 3 ? '…' : '' %>
-                            </p>
-                        <% } %>
-                        <p class="card-price">₹ <%= listing.price.toLocaleString("en-IN") %> / night</p>
-                    </div>
-                </div>
-            </a>
-        <% } %>
+  <% if (currUser) { %>
+    <form id="assistant-form" class="assistant-form" novalidate>
+      <label for="assistant-input" class="visually-hidden">Describe your trip</label>
+      <textarea id="assistant-input" rows="2" maxlength="300"
+        placeholder="e.g. Find me a peaceful two-bedroom property near a beach in Goa under ₹5,000"></textarea>
+      <button type="submit" id="assistant-btn" class="btn btn-primary">
+        <i class="fa-solid fa-magnifying-glass"></i> <span>Search with AI</span>
+      </button>
+    </form>
+    <div class="assistant-examples">
+      <span>Try:</span>
+      <button type="button" class="example-chip">Peaceful 2-bedroom stay in Goa under ₹5000</button>
+      <button type="button" class="example-chip">Villa for 4 guests in Bali</button>
+      <button type="button" class="example-chip">Cheap apartment in Tokyo</button>
     </div>
+    <p class="assistant-counter"><span id="assistant-count">0</span>/300</p>
+  <% } else { %>
+    <div class="assistant-login">
+      <i class="fa-solid fa-lock"></i>
+      <span>Log in to use the AI assistant.</span>
+      <a class="btn btn-primary btn-sm" href="/login">Log in</a>
+    </div>
+  <% } %>
+
+  <div id="assistant-error" class="alert alert-danger d-none" role="alert"></div>
+  <div id="assistant-result" class="assistant-result d-none" aria-live="polite">
+    <div class="result-summary">
+      <i class="fa-solid fa-sparkles"></i>
+      <div>
+        <p id="result-summary-text"></p>
+        <ul id="result-notes" class="result-notes"></ul>
+        <p id="result-criteria" class="result-criteria"></p>
+      </div>
+    </div>
+    <div id="result-grid" class="listings-grid"></div>
+    <button type="button" id="result-clear" class="btn btn-secondary btn-sm">Clear results &amp; show all stays</button>
+  </div>
 </section>
 
+<!-- ===== All listings ===== -->
+<section class="listings-section" id="all-listings">
+  <div class="section-row">
+    <h2 class="listings-heading">All stays</h2>
+    <span class="listing-count"><%= all_listing.length %> place<%= all_listing.length === 1 ? '' : 's' %></span>
+  </div>
 
+  <% if (all_listing.length === 0) { %>
+    <div class="empty-state">
+      <div class="empty-icon"><i class="fa-solid fa-house-circle-xmark"></i></div>
+      <h2>No listings yet</h2>
+      <p>Be the first to list a property on StayAI.</p>
+      <% if (currUser && currUser.role === 'host') { %><a href="/listings/new" class="btn btn-primary">Add a listing</a><% } %>
+    </div>
+  <% } else { %>
+    <div class="listings-grid">
+      <% for (let listing of all_listing) { %>
+        <%- include("../includes/listingCard", { listing, matched: [] }) %>
+      <% } %>
+    </div>
+  <% } %>
+</section>
 
-    </body>
+<script src="/js/assistant.js"></script>

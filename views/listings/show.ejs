@@ -1,95 +1,167 @@
 <% layout("/layouts/boilerplate") %>
+<% locals.pageTitle = listing.title %>
 
-  <div class="show-page">
+<%
+  const reviews = listing.reviews || [];
+  const reviewCount = reviews.length;
+  const avgRating = reviewCount ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(1) : null;
+  const isOwnerUser = currUser && listing.owner && String(listing.owner._id) === String(currUser._id);
+  const stars = (n) => '★'.repeat(n) + '☆'.repeat(5 - n);
+%>
 
-    <!-- Top bar -->
-    <div class="show-topbar">
-      <a href="/listings" class="back-link">← Back to all listings</a>
-      <a href="/listings/new" class="btn-primary btn-sm">+ New Listing</a>
-    </div>
+<div class="show-page">
+  <div class="show-topbar">
+    <a href="/listings" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to all stays</a>
+  </div>
 
-    <!-- Hero image -->
-    <div class="show-hero">
-      <img src="<%= listing.images && listing.image.url %>" alt="<%= listing.title %>"
-        onerror="this.onerror=null; this.src='https://picsum.photos/seed/listing/1200/600';" />
-    </div>
+  <h1 class="show-title"><%= listing.title %></h1>
+  <p class="show-location">
+    <i class="fa-solid fa-location-dot"></i> <%= listing.location %>, <%= listing.country %>
+    <% if (avgRating !== null) { %> · <span class="rating-inline">★ <%= avgRating %> (<%= reviewCount %> review<%= reviewCount !== 1 ? 's' : '' %>)</span><% } %>
+  </p>
 
-    <!-- Content -->
-    <div class="show-content">
+  <div class="show-hero">
+    <img src="<%= imageFor(listing) %>" alt="<%= listing.title %>" width="1200" height="520"
+      onerror="this.onerror=null; this.src='/img/placeholder.svg';" />
+  </div>
 
-      <!-- Main info -->
-      <div class="show-main">
-        <h1 class="show-title">
-          <%= listing.title %>
-        </h1>
-
-        <p class="show-location">
-          📍 <%= listing.location %>, <%= listing.country %>
-        </p>
-
-        <!-- Owner info -->
-        <p>Owned by: <i>
-            <%= listing.owner ? listing.owner.username : "Unknown host" %>
-          </i></p>
-        <div class="show-price">
-          <%= new Intl.NumberFormat('en-IN', { style: 'currency' , currency: 'INR' , maximumFractionDigits: 0
-            }).format(listing.price) %>
-            <span class="per-night">/ night</span>
-        </div>
-
-        <div class="show-description">
-          <h3>About this place</h3>
-          <p>
-            <%= listing.description %>
-          </p>
-        </div>
-
-        <!-- Listing details -->
-        <div class="show-details">
-          <h3>Details</h3>
-          <ul>
-            <li><strong>Type:</strong>
-              <%= listing.propertyType %>
-            </li>
-            <li><strong>Guests:</strong>
-              <%= listing.guests %>
-            </li>
-            <li><strong>Bedrooms:</strong>
-              <%= listing.bedrooms %>
-            </li>
-            <li><strong>Beds:</strong>
-              <%= listing.beds %>
-            </li>
-            <li><strong>Bathrooms:</strong>
-              <%= listing.bathrooms %>
-            </li>
-            <li><strong>Amenities:</strong>
-              <%= (listing.amenities || []).join(', ') || ' —' %>
-            </li>
-            <li><strong>Nearby:</strong>
-              <%= (listing.nearbyAttractions || []).join(', ') || ' —' %>
-            </li>
-          </ul>
+  <div class="show-content">
+    <!-- ===== Main column ===== -->
+    <div class="show-main">
+      <div class="host-row">
+        <span class="avatar avatar-lg"><%= listing.owner ? listing.owner.username.charAt(0).toUpperCase() : '?' %></span>
+        <div>
+          <strong><%= listing.propertyType %> hosted by <%= listing.owner ? listing.owner.username : 'a StayAI host' %></strong>
+          <div class="host-meta"><%= listing.guests %> guests · <%= listing.bedrooms %> bedroom<%= listing.bedrooms === 1 ? '' : 's' %> · <%= listing.beds %> bed<%= listing.beds === 1 ? '' : 's' %> · <%= listing.bathrooms %> bath<%= listing.bathrooms === 1 ? '' : 's' %></div>
         </div>
       </div>
 
-      <!-- Sidebar / actions (only visible to owner) -->
-      <% if (currUser && listing.owner && listing.owner._id.equals(currUser._id)) { %>
-        <aside class="show-sidebar">
-          <div class="action-card">
-            <h4 class="action-heading">Host actions</h4>
+      <div class="show-description">
+        <h3>About this place</h3>
+        <p><%= listing.description %></p>
+      </div>
 
-            <div class="btns">
-              <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark">✏️ Edit</a>
+      <% if ((listing.amenities || []).length) { %>
+        <div class="show-block">
+          <h3>What this place offers</h3>
+          <ul class="pill-list"><% listing.amenities.forEach(a => { %><li><i class="fa-solid fa-check"></i> <%= a %></li><% }) %></ul>
+        </div>
+      <% } %>
 
-              <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="d-inline"
-                onsubmit="return confirm('Delete this listing permanently?');">
-                <button class="btn btn-danger">🗑 Delete</button>
-              </form>
-            </div>
+      <% if ((listing.nearbyAttractions || []).length) { %>
+        <div class="show-block">
+          <h3>Nearby</h3>
+          <ul class="pill-list"><% listing.nearbyAttractions.forEach(a => { %><li><i class="fa-solid fa-map-pin"></i> <%= a %></li><% }) %></ul>
+        </div>
+      <% } %>
+
+      <hr>
+
+      <!-- ===== Reviews ===== -->
+      <section class="reviews" id="reviews">
+        <h3>
+          <% if (avgRating !== null) { %>★ <%= avgRating %> · <%= reviewCount %> review<%= reviewCount !== 1 ? 's' : '' %>
+          <% } else { %>Reviews<% } %>
+        </h3>
+
+        <% if (reviewCount === 0) { %>
+          <p class="muted">No reviews yet. Be the first to share your experience!</p>
+        <% } else { %>
+          <div class="review-grid">
+            <% reviews.forEach((review) => { %>
+              <div class="review-card">
+                <div class="review-top">
+                  <span class="avatar"><%= review.author && review.author.username ? review.author.username.charAt(0).toUpperCase() : '?' %></span>
+                  <div>
+                    <strong><%= review.author && review.author.username ? review.author.username : 'User' %></strong>
+                    <div class="review-date"><%= review.createdAt ? new Date(review.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : '' %></div>
+                  </div>
+                </div>
+                <div class="review-stars" aria-label="<%= review.rating %> out of 5"><%= stars(review.rating) %></div>
+                <p><%= review.comment %></p>
+                <% if (currUser && review.author && String(review.author._id || review.author) === String(currUser._id)) { %>
+                  <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" method="POST"
+                    onsubmit="return confirm('Delete this review?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete review</button>
+                  </form>
+                <% } %>
+              </div>
+            <% }) %>
           </div>
-        </aside>
         <% } %>
 
+        <% if (currUser) { %>
+          <h4 class="mt-4">Leave a review</h4>
+          <form action="/listings/<%= listing._id %>/reviews" method="POST" class="needs-validation review-form" novalidate>
+            <div class="mb-3">
+              <label for="rating" class="form-label">Rating</label>
+              <select id="rating" name="review[rating]" class="form-select" required>
+                <option value="">Choose a rating</option>
+                <option value="5">★★★★★ · Excellent</option>
+                <option value="4">★★★★ · Very good</option>
+                <option value="3">★★★ · Good</option>
+                <option value="2">★★ · Fair</option>
+                <option value="1">★ · Poor</option>
+              </select>
+              <div class="invalid-feedback">Please choose a rating.</div>
+            </div>
+            <div class="mb-3">
+              <label for="comment" class="form-label">Comment</label>
+              <textarea id="comment" name="review[comment]" rows="3" maxlength="1000" required class="form-control"
+                placeholder="Share your experience..."></textarea>
+              <div class="invalid-feedback">Please write a short comment.</div>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit review</button>
+          </form>
+        <% } else { %>
+          <p class="muted mt-3"><a href="/login">Log in</a> to leave a review.</p>
+        <% } %>
+      </section>
     </div>
+
+    <!-- ===== Sidebar: booking or host actions ===== -->
+    <aside class="show-sidebar">
+      <% if (isOwnerUser) { %>
+        <div class="action-card">
+          <h4 class="action-heading">Host actions</h4>
+          <p class="show-price-sm"><%= inr(listing.price) %> <span>/ night</span></p>
+          <div class="btns">
+            <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark"><i class="fa-solid fa-pen"></i> Edit</a>
+            <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE"
+              onsubmit="return confirm('Delete this listing permanently?');">
+              <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Delete</button>
+            </form>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="action-card booking-card">
+          <p class="show-price-sm"><%= inr(listing.price) %> <span>/ night</span></p>
+          <% if (currUser) { %>
+            <form action="/listings/<%= listing._id %>/bookings" method="POST" class="needs-validation booking-form"
+              data-price="<%= listing.price %>" novalidate>
+              <div class="date-grid">
+                <div>
+                  <label for="checkIn" class="form-label">Check-in</label>
+                  <input type="date" id="checkIn" name="booking[checkIn]" required class="form-control" />
+                </div>
+                <div>
+                  <label for="checkOut" class="form-label">Check-out</label>
+                  <input type="date" id="checkOut" name="booking[checkOut]" required class="form-control" />
+                </div>
+              </div>
+              <div class="mt-3">
+                <label for="guestsInput" class="form-label">Guests (max <%= listing.guests %>)</label>
+                <input type="number" id="guestsInput" name="booking[guests]" min="1" max="<%= listing.guests %>" value="1" required class="form-control" />
+              </div>
+              <button class="btn btn-primary w-100 mt-3" data-submit-once>Reserve</button>
+              <p class="booking-total d-none" id="bookingTotal"></p>
+            </form>
+          <% } else { %>
+            <p class="muted"><a href="/login">Log in</a> to book this stay.</p>
+            <a href="/login" class="btn btn-primary w-100">Log in to book</a>
+          <% } %>
+        </div>
+      <% } %>
+    </aside>
   </div>
+</div>

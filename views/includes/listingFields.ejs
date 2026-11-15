@@ -1,0 +1,92 @@
+<%# Fields shared by the New and Edit forms. Expects `listing` (an existing listing, or {} for a new one). %>
+<%
+  const v = (key, fallback = '') => (listing[key] !== undefined && listing[key] !== null ? listing[key] : fallback);
+  const types = ['Apartment', 'House', 'Villa', 'Cabin', 'Cottage', 'Hotel', 'Hostel', 'Treehouse', 'Other'];
+  const currentType = v('propertyType', 'Apartment');
+  const imageUrl = listing.image && listing.image.url ? listing.image.url : '';
+%>
+
+<div class="form-group">
+  <label for="listing-title">Title</label>
+  <input id="listing-title" name="listing[title]" type="text" placeholder="e.g. Cozy beach house in Goa"
+    value="<%= v('title') %>" required minlength="5" maxlength="120" />
+  <div class="invalid-feedback">Title is required (5–120 characters).</div>
+</div>
+
+<div class="form-group">
+  <label for="listing-description">Description</label>
+  <textarea id="listing-description" name="listing[description]" rows="5"
+    placeholder="Describe your space, amenities, and nearby attractions..." required minlength="20"
+    maxlength="2000"><%= v('description') %></textarea>
+  <div class="invalid-feedback">Description must be 20–2000 characters.</div>
+</div>
+
+<div class="form-group">
+  <label for="image">Image URL <small class="muted">(optional, a default photo is used if empty)</small></label>
+  <input id="image" name="listing[image][url]" type="url" placeholder="https://images.unsplash.com/..." value="<%= imageUrl %>" />
+  <div class="invalid-feedback">Please provide a valid URL (http:// or https://).</div>
+  <div class="image-preview" id="image-preview" <%- imageUrl ? '' : 'hidden' %>>
+    <img src="<%= imageUrl %>" alt="Image preview" onerror="this.closest('.image-preview').hidden = true;" />
+  </div>
+</div>
+
+<div class="form-row">
+  <div class="form-group">
+    <label for="propertyType">Property type</label>
+    <select id="propertyType" name="listing[propertyType]" required>
+      <% types.forEach(t => { %><option value="<%= t %>" <%= currentType === t ? 'selected' : '' %>><%= t %></option><% }) %>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="price">Price per night (₹)</label>
+    <input id="price" name="listing[price]" type="number" min="0" placeholder="1800" value="<%= v('price') %>" required />
+    <div class="invalid-feedback">Please provide a valid price.</div>
+  </div>
+</div>
+
+<div class="form-row">
+  <div class="form-group">
+    <label for="location">Location</label>
+    <input id="location" name="listing[location]" type="text" placeholder="e.g. Calangute, Goa" value="<%= v('location') %>" required />
+    <div class="invalid-feedback">Please provide a location.</div>
+  </div>
+  <div class="form-group">
+    <label for="country">Country</label>
+    <input id="country" name="listing[country]" type="text" placeholder="India" value="<%= v('country') %>" required />
+    <div class="invalid-feedback">Please provide a country.</div>
+  </div>
+</div>
+
+<div class="form-row form-row-4">
+  <div class="form-group">
+    <label for="guests">Max guests</label>
+    <input id="guests" name="listing[guests]" type="number" min="1" value="<%= v('guests', 2) %>" required />
+  </div>
+  <div class="form-group">
+    <label for="bedrooms">Bedrooms</label>
+    <input id="bedrooms" name="listing[bedrooms]" type="number" min="0" value="<%= v('bedrooms', 1) %>" required />
+  </div>
+  <div class="form-group">
+    <label for="beds">Beds</label>
+    <input id="beds" name="listing[beds]" type="number" min="1" value="<%= v('beds', 1) %>" required />
+  </div>
+  <div class="form-group">
+    <label for="bathrooms">Bathrooms</label>
+    <input id="bathrooms" name="listing[bathrooms]" type="number" min="0" value="<%= v('bathrooms', 1) %>" required />
+  </div>
+</div>
+
+<div class="form-group">
+  <label for="amenities">Amenities <small class="muted">(comma-separated)</small></label>
+  <input id="amenities" name="listing[amenities]" type="text" placeholder="WiFi, Pool, Air Conditioning, Kitchen"
+    value="<%= (listing.amenities || []).join(', ') %>" />
+</div>
+
+<div class="form-group">
+  <label for="nearbyAttractions">Nearby attractions <small class="muted">(comma-separated)</small></label>
+  <input id="nearbyAttractions" name="listing[nearbyAttractions]" type="text" placeholder="Baga Beach, Anjuna Market"
+    value="<%= (listing.nearbyAttractions || []).join(', ') %>" />
+</div>
+
+<%# Search tags: filled by the AI helper, kept as-is on edit. They help the AI Travel Assistant find this listing. %>
+<input type="hidden" id="listing-tags" name="listing[tags]" value="<%= (listing.tags || []).join(', ') %>" />

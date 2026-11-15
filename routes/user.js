@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/user");
 const passport = require("passport");
+const { saveRedirectUrl } = require("../middleware");
 
 // Render Signup Form
 router.get("/signup", (req, res) => {
@@ -13,7 +14,13 @@ router.get("/signup", (req, res) => {
 router.post("/signup", async (req, res, next) => {
   try {
     const { username, email, password, role } = req.body;
-    const newUser = new User({ email, username, role });
+    if (typeof password !== "string" || password.length < 6) {
+      req.flash("error", "Password must be at least 6 characters.");
+      return res.redirect("/signup");
+    }
+    // Only these two roles can be chosen at signup
+    const safeRole = role === "host" ? "host" : "guest";
+    const newUser = new User({ email, username, role: safeRole });
     const registeredUser = await User.register(newUser, password);
 
     req.login(registeredUser, (err) => {
@@ -22,7 +29,9 @@ router.post("/signup", async (req, res, next) => {
       res.redirect("/listings");
     });
   } catch (e) {
-    req.flash("error", e.message);
+    // Friendlier message for a duplicate email (Mongo duplicate key error)
+    const message = e.code === 11000 ? "That email or username is already registered." : e.message;
+    req.flash("error", message);
     res.redirect("/signup");
   }
 });
@@ -32,16 +41,17 @@ router.get("/login", (req, res) => {
   res.render("users/login.ejs");
 });
 
-// Login Logic
+// Login Logic — saveRedirectUrl copies the "page you wanted" out of the session before passport renews it
 router.post(
   "/login",
+  saveRedirectUrl,
   passport.authenticate("local", {
     failureRedirect: "/login",
     failureFlash: true,
   }),
   (req, res) => {
     req.flash("success", "Welcome back to StayAI!");
-    res.redirect("/listings");
+    res.redirect(res.locals.redirectUrl || "/listings");
   }
 );
 

@@ -1,0 +1,21 @@
+<%# Shared card: used by the listings page AND by the AI assistant results (rendered on the server) %>
+<a href="/listings/<%= listing._id %>" class="listing-link">
+  <article class="listing-card">
+    <div class="listing-img">
+      <img src="<%= imageFor(listing) %>" alt="<%= listing.title %>" loading="lazy" width="400" height="300"
+        onerror="this.onerror=null; this.src='/img/placeholder.svg';" />
+      <span class="type-badge"><%= listing.propertyType %></span>
+    </div>
+    <div class="card-body">
+      <h3 class="card-title"><%= listing.title %></h3>
+      <p class="card-loc"><i class="fa-solid fa-location-dot"></i> <%= listing.location %>, <%= listing.country %></p>
+      <p class="card-text"><%= listing.guests %> guests · <%= listing.bedrooms %> bedroom<%= listing.bedrooms === 1 ? '' : 's' %> · <%= listing.beds %> bed<%= listing.beds === 1 ? '' : 's' %></p>
+      <% if (typeof matched !== 'undefined' && matched && matched.length) { %>
+        <p class="match-chips">
+          <% matched.forEach(function (m) { %><span class="chip"><i class="fa-solid fa-check"></i> <%= m %></span><% }) %>
+        </p>
+      <% } %>
+      <p class="card-price"><%= inr(listing.price) %> <span>/ night</span></p>
+    </div>
+  </article>
+</a>

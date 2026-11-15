@@ -1,3 +1,4 @@
+const Review = require('./review'); // Import the Review model
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -118,7 +119,7 @@ const listingSchema = new Schema(
     ],
 
     owner: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'User', // User model comes in Phase 1 (auth step)
     },
   },
@@ -126,6 +127,12 @@ const listingSchema = new Schema(
     timestamps: true, // adds createdAt & updatedAt automatically
   }
 );
+
+listingSchema.post("findOneAndDelete", async (listing) => {
+  if (listing) {
+    await Review.deleteMany({ _id: { $in: listing.reviews } });
+  }
+});
 
 const Listing = mongoose.model('Listing', listingSchema);
 module.exports = Listing;

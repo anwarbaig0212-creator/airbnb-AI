@@ -1,0 +1,61 @@
+<% layout("/layouts/boilerplate") %>
+<% locals.pageTitle = "My Trips" %>
+
+<%
+  const fmt = (d) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  const nightsOf = (b) => Math.round((b.checkOut - b.checkIn) / 86400000);
+%>
+
+<div class="page-head">
+  <h1>My Trips</h1>
+  <p>Your upcoming stays, past trips and cancellations.</p>
+</div>
+
+<% const renderTrip = (b, canCancel) => { %>
+  <% const l = b.listing; %>
+  <article class="trip-card <%= b.status === 'cancelled' ? 'is-cancelled' : '' %>">
+    <% if (l) { %>
+      <a href="/listings/<%= l._id %>" class="trip-img">
+        <img src="<%= imageFor(l) %>" alt="<%= l.title %>" loading="lazy" onerror="this.onerror=null; this.src='/img/placeholder.svg';">
+      </a>
+    <% } else { %>
+      <div class="trip-img"><img src="/img/placeholder.svg" alt="Listing removed"></div>
+    <% } %>
+    <div class="trip-body">
+      <h3><%= l ? l.title : 'This listing is no longer available' %></h3>
+      <% if (l) { %><p class="trip-loc"><i class="fa-solid fa-location-dot"></i> <%= l.location %>, <%= l.country %></p><% } %>
+      <p class="trip-dates"><i class="fa-regular fa-calendar"></i> <%= fmt(b.checkIn) %> → <%= fmt(b.checkOut) %> · <%= nightsOf(b) %> night<%= nightsOf(b) === 1 ? '' : 's' %> · <%= b.guests %> guest<%= b.guests === 1 ? '' : 's' %></p>
+      <p class="trip-total">Total <strong><%= inr(b.totalPrice) %></strong>
+        <span class="status-pill status-<%= b.status %>"><%= b.status %></span>
+      </p>
+    </div>
+    <% if (canCancel) { %>
+      <form action="/bookings/<%= b._id %>?_method=DELETE" method="POST" class="trip-actions"
+        onsubmit="return confirm('Cancel this booking?');">
+        <button class="btn btn-outline-danger btn-sm">Cancel booking</button>
+      </form>
+    <% } %>
+  </article>
+<% } %>
+
+<% if (!upcoming.length && !past.length && !cancelled.length) { %>
+  <section class="empty-state">
+    <div class="empty-icon"><i class="fa-solid fa-suitcase-rolling"></i></div>
+    <h2>No trips yet</h2>
+    <p>When you book a stay it will show up here.</p>
+    <a href="/listings" class="btn btn-primary">Find a stay</a>
+  </section>
+<% } %>
+
+<% if (upcoming.length) { %>
+  <h2 class="section-title">Upcoming</h2>
+  <div class="trip-list"><% upcoming.forEach(b => renderTrip(b, true)) %></div>
+<% } %>
+<% if (past.length) { %>
+  <h2 class="section-title">Past trips</h2>
+  <div class="trip-list"><% past.forEach(b => renderTrip(b, false)) %></div>
+<% } %>
+<% if (cancelled.length) { %>
+  <h2 class="section-title">Cancelled</h2>
+  <div class="trip-list"><% cancelled.forEach(b => renderTrip(b, false)) %></div>
+<% } %>

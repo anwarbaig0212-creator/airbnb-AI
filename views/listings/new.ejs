@@ -1,163 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
+<% layout("/layouts/boilerplate") %>
+<% locals.pageTitle = "New listing" %>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>New Listing · StayAI</title>
+<div class="form-wrapper">
+  <div class="form-card">
+    <h1 class="form-heading">Create your new listing</h1>
+    <p class="form-subtext">Share your space with travellers around the world.</p>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
-    rel="stylesheet" />
-  <link rel="stylesheet" href="/css/style.css" />
-</head>
-
-<body class="new-listing-page">
-
-  <div class="form-wrapper">
-    <div class="form-card">
-
-      <h2 class="form-heading">Create your new listing</h2>
-      <p class="form-subtext">Share your space with travellers around the world.</p>
-
-      <form method="POST" action="/listings" class="listing-form needs-validation" novalidate>
-
-        <!-- Title -->
-        <div class="form-group">
-          <label for="title">Title</label>
-          <input id="title" name="listing[title]" type="text" placeholder="e.g. Cozy beach house in Goa" required
-            minlength="5" maxlength="120" />
-          <div class="invalid-feedback">Title is required (5–120 characters).</div>
+    <!-- AI helper: kept outside the <form> so its inputs are never submitted -->
+    <div class="ai-helper">
+      <h5><i class="fa-solid fa-wand-magic-sparkles"></i> AI helper</h5>
+      <p class="muted">Fill these in and click “Generate”. The title, description and search tags are filled in for you. You can edit them before saving.</p>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label class="form-label" for="ai-location">Location *</label>
+          <input id="ai-location" class="form-control" placeholder="e.g. Anjuna, Goa" />
         </div>
-
-        <!-- Description -->
-        <div class="form-group">
-          <label for="description">Description</label>
-          <textarea id="description" name="listing[description]" rows="4"
-            placeholder="Describe your space, amenities, and nearby attractions..." required minlength="20"
-            maxlength="2000"></textarea>
-          <div class="invalid-feedback">Description must be 20–2000 characters.</div>
+        <div class="col-md-6">
+          <label class="form-label" for="ai-propertyType">Property type</label>
+          <input id="ai-propertyType" class="form-control" placeholder="e.g. apartment" />
         </div>
-
-        <!-- Image URL -->
-        <div class="form-group">
-          <label for="image">Image URL</label>
-          <input id="image" name="listing[image][url]" type="url" placeholder="https://images.unsplash.com/..." />
-          <div class="invalid-feedback">Please provide a valid URL (http:// or https://).</div>
+        <div class="col-md-4">
+          <label class="form-label" for="ai-bedrooms">Bedrooms</label>
+          <input id="ai-bedrooms" type="number" min="1" class="form-control" />
         </div>
-
-        <!-- Property Type + Price -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="propertyType">Property Type</label>
-            <select id="propertyType" name="listing[propertyType]" required>
-              <option value="Apartment" selected>Apartment</option>
-              <option value="House">House</option>
-              <option value="Villa">Villa</option>
-              <option value="Cabin">Cabin</option>
-              <option value="Cottage">Cottage</option>
-              <option value="Hotel">Hotel</option>
-              <option value="Hostel">Hostel</option>
-              <option value="Treehouse">Treehouse</option>
-              <option value="Other">Other</option>
-            </select>
-            <div class="invalid-feedback">Please select a property type.</div>
-          </div>
-
-          <div class="form-group">
-            <label for="price">Price (per night)</label>
-            <input id="price" name="listing[price]" type="number" min="0" placeholder="1800" required />
-            <div class="invalid-feedback">Please provide a valid price.</div>
-          </div>
+        <div class="col-md-8">
+          <label class="form-label" for="ai-amenities">Amenities (comma-separated)</label>
+          <input id="ai-amenities" class="form-control" placeholder="WiFi, Pool, AC" />
         </div>
-
-        <!-- Location + Country -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="location">Location</label>
-            <input id="location" name="listing[location]" type="text" placeholder="e.g. Calangute, Goa" required />
-            <div class="invalid-feedback">Please provide a location.</div>
-          </div>
-
-          <div class="form-group">
-            <label for="country">Country</label>
-            <input id="country" name="listing[country]" type="text" placeholder="India" required />
-            <div class="invalid-feedback">Please provide a country.</div>
-          </div>
+        <div class="col-md-6">
+          <label class="form-label" for="ai-nearby">Nearby attractions</label>
+          <input id="ai-nearby" class="form-control" placeholder="Baga Beach, flea market" />
         </div>
-
-        <!-- Capacity: guests / bedrooms / beds / bathrooms -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="guests">Max Guests</label>
-            <input id="guests" name="listing[guests]" type="number" min="1" value="2" required />
-            <div class="invalid-feedback">At least 1 guest.</div>
-          </div>
-
-          <div class="form-group">
-            <label for="bedrooms">Bedrooms</label>
-            <input id="bedrooms" name="listing[bedrooms]" type="number" min="0" value="1" required />
-            <div class="invalid-feedback">Bedrooms cannot be negative.</div>
-          </div>
+        <div class="col-md-6">
+          <label class="form-label" for="ai-special">Special features</label>
+          <input id="ai-special" class="form-control" placeholder="sea view balcony, pet friendly" />
         </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="beds">Beds</label>
-            <input id="beds" name="listing[beds]" type="number" min="1" value="1" required />
-            <div class="invalid-feedback">At least 1 bed.</div>
-          </div>
-
-          <div class="form-group">
-            <label for="bathrooms">Bathrooms</label>
-            <input id="bathrooms" name="listing[bathrooms]" type="number" min="0" value="1" required />
-            <div class="invalid-feedback">Bathrooms cannot be negative.</div>
-          </div>
-        </div>
-
-        <!-- Amenities (comma-separated for now — we'll upgrade UI later) -->
-        <div class="form-group">
-          <label for="amenities">Amenities (comma-separated)</label>
-          <input id="amenities" name="listing[amenities]" type="text"
-            placeholder="WiFi, Pool, Air Conditioning, Kitchen" />
-        </div>
-
-        <!-- Nearby Attractions -->
-        <div class="form-group">
-          <label for="nearbyAttractions">Nearby Attractions (comma-separated)</label>
-          <input id="nearbyAttractions" name="listing[nearbyAttractions]" type="text"
-            placeholder="Baga Beach, Anjuna Market, Fort Aguada" />
-        </div>
-
-        <!-- Actions -->
-        <div class="form-actions">
-          <a href="/listings" class="btn-secondary">Cancel</a>
-          <button type="submit" class="btn-primary">Add Listing</button>
-        </div>
-
-      </form>
-
+      </div>
+      <button type="button" id="ai-generate-btn" class="btn btn-primary btn-sm mt-3">Generate with AI</button>
+      <span id="ai-status" class="ms-2 ai-status" role="status"></span>
     </div>
+
+    <form method="POST" action="/listings" class="listing-form needs-validation" novalidate>
+      <%- include("../includes/listingFields", { listing: {} }) %>
+      <div class="form-actions">
+        <a href="/listings" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary" data-submit-once>Add listing</button>
+      </div>
+    </form>
   </div>
-
-  <script>
-    (function () {
-      'use strict';
-      var forms = document.querySelectorAll('.needs-validation');
-      Array.prototype.slice.call(forms).forEach(function (form) {
-        form.addEventListener('submit', function (event) {
-          if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
-          form.classList.add('was-validated');
-        }, false);
-      });
-    })();
-  </script>
-
-</body>
-
-</html>
+</div>
+<script src="/js/listing-form.js"></script>
